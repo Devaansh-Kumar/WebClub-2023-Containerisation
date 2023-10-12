@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    expose:
+      - 27017
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: gyan-backend
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: gyan-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+      - mongo
+
+volumes:
+  mongo-data:

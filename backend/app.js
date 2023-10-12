@@ -8,6 +8,7 @@ const {errorMiddleware} = require('./middleware/errorMiddleware')
 
 const app = express();
 app.use(cors());
+app.options('*', cors())
 app.use(morgan('tiny'))
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));

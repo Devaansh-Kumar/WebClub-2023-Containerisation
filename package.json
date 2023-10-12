@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon backend/app.js",
-    "start":"node backend/app.js"
+    "start": "node backend/app.js"
   },
   "author": "Harshit Gupta",
   "license": "ISC",
@@ -17,7 +17,7 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.5.1",
-    "react-icons": "^4.4.0"
+    "node-gyp": "^9.4.0"
   },
   "devDependencies": {
     "dotenv": "^16.0.3",
