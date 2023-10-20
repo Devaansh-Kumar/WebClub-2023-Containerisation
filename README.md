@@ -1,134 +1,320 @@
-# IRIS Code In 107 Task-2 
+# WebClub Systems and Security Sig Task: Containerisation
 
-## Installation Steps:
+## Task 1 and 2: Docker and Docker Compose
 
-1. Install nodejs and npm on your device.
-2. Clone the repository to your local system.
-3. In the root folder, create a '.env' file.
-4. Create a MongoDB server and get the MongoDB URI.
-5. Add env variables as "MONGO_URI" to the .env file
-6. Add a PORT variable and JWT_SECRET variable too.
-7. Set PORT = 5000
-8. Set JWT_SECRET as a string of your choice.
+To containerise the given MERN stack application using docker, I first made Docker files for 
+the frontend and backend.
 
+This is Dockerfile.frontend
+    FROM node:17
 
-## Steps to run the project
+    WORKDIR /frontend
 
-1. Open up the command terminal from the root directory and type `npm start` to start the backend server.
+    COPY package.json /frontend/
+    RUN npm install
 
-2. Open another command prompt and type the following to start the frontend.  
-`cd frontend`  
-`npm run dev`
+    COPY . .
 
-3. The application would be run on http://127.0.0.1:5173/
+    EXPOSE 5173
 
-4. An admin user will be created in the database  
+    CMD [ "npm", "run", "dev"]
 
-    Email : admin@nitk.edu.in  
-    Password: admin123
+This is Dockerfile.backend.
+    FROM node:17
 
-## List of implemented features
+    WORKDIR /app
 
-* Register and Login User
-* Each user gets a unique avatar
-* Users can only register with NITK email id
-* Different roles like Admin, Internship Coordinator, Placement Coordinator and User.
-* List of categories with ability to add and delete category for the admin
-* List of Users with their information
-* Admin can change allowed categories for each user and handle their roles and status.
-* Internship and Placement coordinators can edit the User status.
-* User Dashboard where a user can see the categories he can write about and the gyans he has already wrote.
-* List of Gyans
-* Seperate page for each Gyan with an accordion
-* Forms to add and edit gyans
-* Pagination on the Gyan Page
-* Filtering based on category and User branch
+    COPY package.json /app/
+    RUN npm install
 
-## List of planned features
+    COPY . .
 
-* User authentication with Google OAuth
-* Better and responsive UI
-* Charts to show metadata about the gyans
-* Dark mode
-* More filtering options
+    EXPOSE 5000
 
-## List of known bugs
-* The pagination only lets the filter to apply on the current Gyans being rendered on the page.
-* On deleting a category, a question or a user, the documents in which they were refered are not deleted. This renders them as null on populating from the database and breaks the application.
-* On smaller screen, the UI breaks
-* A user should be able to write a single gyan and each topic but he can write multiple of them.
+    CMD [ "npm", "start" ]
 
-## References
-* Stack Overflow
-* LogRocket blog
-* Tailwind CSS docs
-* W3School
-* Jason Watmore's blog
-* Mongoose JS docs
-* Formik docs
-* Medium articles
+I brought all the services together using docker compose.
 
-## Screenshots
+```yaml
+version: '3'
 
-Register Form
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    expose:
+      - 27017
+    volumes:
+      - mongo-data:/data/db
 
-![Register Form](./screenshots/1.png?raw=true "Register Form")
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: gyan-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: gyan-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+      - mongo
 
-Login Form
+volumes:
+  mongo-data:
+```
 
-![Login Form](./screenshots/3.png?raw=true "Login Form")
+I am using docker volumes to persist data of MongoDB.
 
-User List
+To run the containers just run the following commands:
+```bash
+docker compose build
+docker compose up
+```
 
-![User List](./screenshots/5.png?raw=true "User List")
+Now you can visit the site at `http://localhost:5173`
 
-User Details (1)
+Some screenshots:
 
-![User Details (1)](./screenshots/6.png?raw=true "User Details (1)")
+![](ss/task12img1.png)
 
-User Details (2)
+![](ss/task12img2.png)
 
-![User Details (2)](./screenshots/7.png?raw=true "User Details (2)")
+![](ss/task12img3.png)
 
-Edit User Form
+## Task 3: Kubernetes
 
-![Edit User](./screenshots/8.png?raw=true "Edit User")
-List of Gyans
+For deployment of the application on Kuberentes, I have created 3 manifest files, one each for MongoDB, ExpressJS and ReactJS. I have created a deployment object and service object for each.
 
-![List of Gyans](./screenshots/9.png?raw=true "List of Gyans")
-Filtering
+mongodb-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mongodb-depl
+spec:
+  selector:
+    matchLabels:
+      app: mongodb-pod
+  template:
+    metadata:
+      labels:
+        app: mongodb-pod
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 27017
 
-![Filtering](./screenshots/10.png?raw=true "Filtering")
-List of Categories
+---
 
-![List of Categories](./screenshots/11.png?raw=true "List of Categories")
-Add Category
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb-pod
+  ports:
+  - port: 27017
+    targetPort: 27017
 
-![Add Category](./screenshots/12.png?raw=true "Add Category")
-List of Questions in a category
+---
+```
 
-![List of Questions in a category](./screenshots/13.png?raw=true "List of Questions in a category")
+express-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-deployment
+  labels:
+    app: express-depl
+spec:
+  selector:
+    matchLabels:
+      app: express-pod
+  template:
+    metadata:
+      labels:
+        app: express-pod
+    spec:
+      containers:
+      - name: express-container
+        image: gyan-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+          - name: MONGO_URI
+            value: mongodb://mongodb-service:27017/Gyan
+          - name: PORT
+            value: "5000"
+          - name: JWT_SECRET
+            value: thisisarandomstring
 
-User Dashboard (1)
+---
 
-![UserDashboard](./screenshots/14.png?raw=true "User Dashboard")
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service
+spec:
+  selector:
+    app: express-pod
+  type: LoadBalancer
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 30500
 
-User Dashboard (2)
+---
+```
 
-![UserDashboard](./screenshots/15.png?raw=true "User Dashboard")
+react-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+  labels:
+    app: react-depl
+spec:
+  selector:
+    matchLabels:
+      app: react-pod
+  template:
+    metadata:
+      labels:
+        app: react-pod
+    spec:
+      containers:
+      - name: react-container
+        image: gyan-frontend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5173
 
-Single Gyan
+---
 
-![Single Gyan](./screenshots/16.png?raw=true "Single Gyan")
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-service
+spec:
+  selector:
+    app: react-pod
+  type: LoadBalancer
+  ports:
+  - port: 5173
+    targetPort: 5173
+    nodePort: 30517
 
+---
+```
 
+First start minikube using the following command. The default driver is docker.
+```bash
+minikube start
+```
+After minikube starts get the IP address of minikube and replace `localhost:5000` with `<minikube ip>:30500` everywhere in the react app.
+Get the IP using:
+```bash
+minikube ip
+```
 
-CREDITS: [Harshit Gupta](https://github.com/hgupta12)
+To deploy the application, first you need to build the Dockerfiles for the frontend and backend
 
+```bash
+docker build -t gyan-backend -f frontend/Dockerfile.backend .
+docker build -t gyan-frontend -f frontend/Dockerfile.frontend frontend/
+```
 
+The docker images needs to be loading into minikube. The following commands may take some time to finish:
+```bash
+minikube image load gyan-frontend
+minikube image load gyan-backend
+```
 
+Once the images are loaded, the manifest files need to be applied in the following order:
+```bash
+kubectl apply -f manifests/mongodb-deployment.yaml
+kubectl apply -f manifests/express-deployment.yaml
+kubectl apply -f manifests/react-deployment.yaml
+```
+![](ss/task3img3.png)
 
+After the deployments and services start running, run the following command to automatically start the
+```bash
+minikube service react-service
+```
+![](ss/task3img1.png)
 
+The application should now start at `<minikube ip>:30517`
 
+![](ss/task3img2.png)
 
+After running the application run the following to remove the pods:
+```bash
+kubectl delete -f manifests/react-deployment.yaml -f manifests/express-deployment.yaml -f manifests/mongodb-deployment.yaml
+```
+
+## Bonus Task: Github Action
+Create github secrets called `DOCKERHUB_USERNAME` and `DOCKERHUB_PASSWORD` before running the github actions
+
+```yaml
+name: Gyan Github Action
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-upload-to-docker-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gyan-backend:${{ github.run_number }}
+```
+
+I have only deployed the gyan-backend image because only one private image can be uploaded using free account of Docker Hub.
+
+![](ss/bonusimg1.png)
+
+![](ss/bonusimg2.png)
