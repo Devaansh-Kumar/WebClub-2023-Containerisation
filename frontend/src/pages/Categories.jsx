@@ -15,12 +15,12 @@ const Categories = () => {
     const [showForm,setShowForm] = useState(false)
   const { response, loading, error } = useAxios({
     method: "GET",
-    url: "http://localhost:5000/admin/category",
+    url: "http://192.168.49.2:30500/admin/category",
   });
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/admin/category/${id}`, {
+      await axios.delete(`http://192.168.49.2:30500/admin/category/${id}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },

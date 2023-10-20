@@ -16,8 +16,6 @@ services:
     container_name: gyan-backend
     ports:
       - "5000:5000"
-    expose:
-      - 5000
     env_file:
       - .env
     depends_on:

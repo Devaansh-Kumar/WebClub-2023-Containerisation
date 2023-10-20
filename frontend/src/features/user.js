@@ -18,7 +18,7 @@ export const loginUser = createAsyncThunk(
   "user/login",
   async ({ email, password }, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:5000/auth/login", {
+      const res = await axios.post("http://192.168.49.2:30500/auth/login", {
         email,
         password,
       });
@@ -33,7 +33,7 @@ export const registerUser = createAsyncThunk(
   "user/register",
   async ({ name, email, password }, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:5000/auth/register", {
+      const res = await axios.post("http://192.168.49.2:30500/auth/register", {
         name,
         email,
         password,

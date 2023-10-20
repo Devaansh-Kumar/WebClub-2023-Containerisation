@@ -21,7 +21,7 @@ const AddQuestion = ({ categoryId,setQuestion}) => {
         id: categoryId,
       };
       try {
-        const res = await axios.post("http://localhost:5000/admin/question", body, {
+        const res = await axios.post("http://192.168.49.2:30500/admin/question", body, {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },

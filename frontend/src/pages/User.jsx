@@ -60,7 +60,7 @@ const User = () => {
           <h2 className="text-orange-500 text-2xl font-bold underline mb-4">
             Gyan(s) By the user
           </h2>
-          <Gyans url={`http://localhost:5000/gyan?user=${user._id}`} />
+          <Gyans url={`http://192.168.49.2:30500/gyan?user=${user._id}`} />
         </div>
       </div>
     </section>

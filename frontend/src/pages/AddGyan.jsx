@@ -16,7 +16,7 @@ const AddGyan = () => {
     const location = useLocation();
     const category = useAxios({
         method:'GET',
-        url:`http://localhost:5000/admin/question/${location.state.category._id}`,
+        url:`http://192.168.49.2:30500/admin/question/${location.state.category._id}`,
         headers:{
             Authorization:`Bearer ${user.token}`
         }
@@ -60,7 +60,7 @@ const AddGyan = () => {
                     }
                     answers.push(answer)
                 })
-                await axios.post("http://localhost:5000/gyan",{
+                await axios.post("http://192.168.49.2:30500/gyan",{
                     catId:location.state.category._id,
                     user:location.state.id,
                     answers

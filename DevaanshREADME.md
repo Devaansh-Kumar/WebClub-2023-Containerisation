@@ -1,6 +1,6 @@
 # WebClub Systems and Security Sig Task: Containerisation
 
-## Task 1 and 2
+## Task 1 and 2: Docker and Docker Compose
 
 To containerise the given MERN stack application using docker, I first made Docker files for 
 the frontend and backend.
@@ -54,8 +54,6 @@ services:
     container_name: gyan-backend
     ports:
       - "5000:5000"
-    expose:
-      - 5000
     env_file:
       - .env
     depends_on:
@@ -94,4 +92,186 @@ Some screenshots:
 
 ![](ss/task12img3.png)
 
+## Task 3: Kubernetes
 
+For deployment of the application on Kuberentes, I have created 3 manifest files, one each for MongoDB, ExpressJS and ReactJS. I have created a deployment object and service object for each.
+
+mongodb-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mongodb-depl
+spec:
+  selector:
+    matchLabels:
+      app: mongodb-pod
+  template:
+    metadata:
+      labels:
+        app: mongodb-pod
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 27017
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb-pod
+  ports:
+  - port: 27017
+    targetPort: 27017
+
+---
+```
+
+express-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-deployment
+  labels:
+    app: express-depl
+spec:
+  selector:
+    matchLabels:
+      app: express-pod
+  template:
+    metadata:
+      labels:
+        app: express-pod
+    spec:
+      containers:
+      - name: express-container
+        image: gyan-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+          - name: MONGO_URI
+            value: mongodb://mongodb-service:27017/Gyan
+          - name: PORT
+            value: "5000"
+          - name: JWT_SECRET
+            value: thisisarandomstring
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-service
+spec:
+  selector:
+    app: express-pod
+  type: LoadBalancer
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 30500
+
+---
+```
+
+react-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+  labels:
+    app: react-depl
+spec:
+  selector:
+    matchLabels:
+      app: react-pod
+  template:
+    metadata:
+      labels:
+        app: react-pod
+    spec:
+      containers:
+      - name: react-container
+        image: gyan-frontend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5173
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-service
+spec:
+  selector:
+    app: react-pod
+  type: LoadBalancer
+  ports:
+  - port: 5173
+    targetPort: 5173
+    nodePort: 30517
+
+---
+```
+
+First start minikube using the following command. The default driver is docker.
+```bash
+minikube start
+```
+After minikube starts get the IP address of minikube and replace `localhost:5000` with `<minikube ip>:30500` everywhere in the react app.
+Get the IP using:
+```bash
+minikube ip
+```
+
+To deploy the application, first you need to build the Dockerfiles for the frontend and backend
+
+```bash
+docker build -t gyan-backend -f frontend/Dockerfile.backend .
+docker build -t gyan-frontend -f frontend/Dockerfile.frontend frontend/
+```
+
+The docker images needs to be loading into minikube. The following commands may take some time to finish:
+```bash
+minikube image load gyan-frontend
+minikube image load gyan-backend
+```
+
+Once the images are loaded, the manifest files need to be applied in the following order:
+```bash
+kubectl apply -f manifests/mongodb-deployment.yaml
+kubectl apply -f manifests/express-deployment.yaml
+kubectl apply -f manifests/react-deployment.yaml
+```
+![](ss/task3img3.png)
+
+After the deployments and services start running, run the following command to automatically start the
+```bash
+minikube service react-service
+```
+![](ss/task3img1.png)
+
+The application should now start at `<minikube ip>:30517`
+
+![](ss/task3img2.png)
+
+After running the application run the following to remove the pods:
+```bash
+kubectl delete -f manifests/react-deployment.yaml -f manifests/express-deployment.yaml -f manifests/mongodb-deployment.yaml
+```

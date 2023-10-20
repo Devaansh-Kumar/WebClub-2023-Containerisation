@@ -13,7 +13,7 @@ const EditUser = () => {
   const location = useLocation();
   const user = useAxios({
     method: "GET",
-    url: `http://localhost:5000/admin/user/${location.state.id}`,
+    url: `http://192.168.49.2:30500/admin/user/${location.state.id}`,
     headers: {
       Authorization: `Bearer ${USER.token}`,
     },
@@ -21,7 +21,7 @@ const EditUser = () => {
 
   const categories = useAxios({
     method: "GET",
-    url: `http://localhost:5000/admin/category`,
+    url: `http://192.168.49.2:30500/admin/category`,
     headers: {
       Authorization: `Bearer ${USER.token}`,
     },
@@ -49,7 +49,7 @@ const EditUser = () => {
                 console.log(values);
                 try {
                   await axios.patch(
-                    `http://localhost:5000/admin/user/${user.response._id}`,
+                    `http://192.168.49.2:30500/admin/user/${user.response._id}`,
                     { ...values },
                     {
                       headers: {

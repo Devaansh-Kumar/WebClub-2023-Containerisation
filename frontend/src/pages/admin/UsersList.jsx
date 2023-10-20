@@ -13,7 +13,7 @@ const UsersList = () => {
     // handle delete
     const handleDelete = async (id) => {
       try {
-        await axios.delete(`http://localhost:5000/admin/user/${id}`, {
+        await axios.delete(`http://192.168.49.2:30500/admin/user/${id}`, {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
@@ -27,7 +27,7 @@ const UsersList = () => {
     };
     const {response,error,loading} = useAxios({
         method:'GET',
-        url:'http://localhost:5000/admin/user',
+        url:'http://192.168.49.2:30500/admin/user',
         headers:{
             Authorization:`Bearer ${user.token}`
         }

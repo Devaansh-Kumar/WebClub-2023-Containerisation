@@ -18,7 +18,7 @@ const CategoryQuestions = () => {
 
   const { response, loading, error } = useAxios({
     method: "GET",
-    url: `http://localhost:5000/admin/question/${id}`,
+    url: `http://192.168.49.2:30500/admin/question/${id}`,
     headers: {
       Authorization: `Bearer ${user.token}`,
     },
@@ -40,7 +40,7 @@ const CategoryQuestions = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/admin/question/delete/${id}`, {
+      await axios.delete(`http://192.168.49.2:30500/admin/question/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },

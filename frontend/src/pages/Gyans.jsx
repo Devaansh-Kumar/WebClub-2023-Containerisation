@@ -17,7 +17,7 @@ const Gyans = ({url}) => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true)
     const newUrl = useMemo(()=>{
-        return `http://localhost:5000/gyan?${searchParams.toString()}`;
+        return `http://192.168.49.2:30500/gyan?${searchParams.toString()}`;
     },[searchParams])
 
 
@@ -41,7 +41,7 @@ const Gyans = ({url}) => {
   // handle delete
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/gyan/${id}`, {
+      await axios.delete(`http://192.168.49.2:30500/gyan/${id}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
