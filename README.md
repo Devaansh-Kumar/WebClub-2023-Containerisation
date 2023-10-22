@@ -6,32 +6,36 @@ To containerise the given MERN stack application using docker, I first made Dock
 the frontend and backend.
 
 This is Dockerfile.frontend
-    FROM node:17
+```docker
+FROM node:17
 
-    WORKDIR /frontend
+WORKDIR /frontend
 
-    COPY package.json /frontend/
-    RUN npm install
+COPY package.json /frontend/
+RUN npm install
 
-    COPY . .
+COPY . .
 
-    EXPOSE 5173
+EXPOSE 5173
 
-    CMD [ "npm", "run", "dev"]
+CMD [ "npm", "run", "dev"]
+```
 
 This is Dockerfile.backend.
-    FROM node:17
+```docker
+FROM node:17
 
-    WORKDIR /app
+WORKDIR /app
 
-    COPY package.json /app/
-    RUN npm install
+COPY package.json /app/
+RUN npm install
 
-    COPY . .
+COPY . .
 
-    EXPOSE 5000
+EXPOSE 5000
 
-    CMD [ "npm", "start" ]
+CMD [ "npm", "start" ]
+```
 
 I brought all the services together using docker compose.
 
