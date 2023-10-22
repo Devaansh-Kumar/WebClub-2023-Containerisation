@@ -6,7 +6,7 @@ To containerise the given MERN stack application using docker, I first made Dock
 the frontend and backend.
 
 This is Dockerfile.frontend
-```docker
+```dockerfile
 FROM node:17
 
 WORKDIR /frontend
@@ -22,7 +22,7 @@ CMD [ "npm", "run", "dev"]
 ```
 
 This is Dockerfile.backend.
-```docker
+```dockerfile
 FROM node:17
 
 WORKDIR /app
